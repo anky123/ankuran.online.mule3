@@ -1,0 +1,3 @@
+<!-- BEGIN_INCLUDE(calculate-age:greet) -->
+    <calculate-age:greet config-ref="" friend="#[map-payload:friend]" />
+<!-- END_INCLUDE(calculate-age:greet) -->
