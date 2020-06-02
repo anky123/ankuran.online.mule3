@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json"	xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+
+<!-- 
+	@Author : Ankur BHUYAN
+ 	@Website : https://ankuran.online/
+-->
+
+<validation:config name="Validation_Configuration" doc:name="Validation Configuration" />	
+	<flow name="process-file"  >
+		<http:request config-ref="csv-validation-client" path="/validation" method="POST" doc:name="HTTP"/>
+        <object-to-string-transformer doc:name="Object to String"/>
+        <set-variable variableName="errorResponse" value="#[payload]" doc:name="Variable"/>
+        <choice doc:name="Choice">
+            <when expression="#[payload == &quot;true&quot;]">
+                <logger message="Extension of incoming file is valid." level="INFO" doc:name="Logger"/>
+                <set-payload doc:name="Set Payload" value="{&quot;timeStamp&quot;: &quot;#[server.dateTime.format(&quot;dd-MM-yyyy HH:mm:ss&quot;).toUpperCase()]&quot;, 
+                &quot;output&quot;:&quot;VALID_FILE_CONTENT&quot;, &quot;additionalInfo&quot;: &quot;File content are successfully validated.&quot;}"/>
+            </when>
+            <otherwise>
+                <logger message="File extension of incoming file is invalid." level="INFO" doc:name="Logger"/>
+                <set-payload value="{&quot;timeStamp&quot;: &quot;#[server.dateTime.format(&quot;dd-MM-yyyy HH:mm:ss&quot;).toUpperCase()]&quot;, 
+                &quot;output&quot;:&quot;INVALID_FILE_CONTENT&quot;, &quot;additionalInfo&quot;: &quot;#[flowVars.errorResponse]&quot;}" doc:name="Set Payload"/>
+            </otherwise>
+        </choice>
+	</flow>	
+	<flow name="ValidationComponent">
+		<http:listener config-ref="http-listener-config-validation" path="/validation" doc:name="HTTP" />
+		<object-to-string-transformer doc:name="Object to String"/>
+        <json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
+        <foreach  doc:name="For Each" collection="#[payload]">
+            <validation:is-number config-ref="Validation_Configuration" value="#[payload.Id]" doc:name="Id validator" 
+            message="Id value should be only number. Error in here : #[payload.Id]" numberType="INTEGER" exceptionClass="online.ankuran.api.exception.CustomValidationException"/>
+            <validation:matches-regex config-ref="Validation_Configuration" value="#[payload.FirstName]" doc:name="First Name Validator" regex="^[a-zA-Z]+$" 
+            message="First Name can not contain Integer value and other special characters. Error in : #[payload.FirstName]" 
+            exceptionClass="online.ankuran.api.exception.CustomValidationException"/>
+            <validation:matches-regex config-ref="Validation_Configuration" value="#[payload.MiddleName]" doc:name="Middle Name Validator" regex="^[a-zA-Z]+$" 
+            message="Middle Name can not contain Integer value and other special characters. Error in : #[payload.MiddleName]" 
+            exceptionClass="online.ankuran.api.exception.CustomValidationException"/>
+            <validation:matches-regex config-ref="Validation_Configuration" value="#[payload.LastName]" doc:name="Last Name Validator" regex="^[a-zA-Z]+$" 
+            message="Last Name can not contain Integer value and other special characters. Error in : #[payload.LastName]" 
+            exceptionClass="online.ankuran.api.exception.CustomValidationException"/>
+            <validation:is-email config-ref="Validation_Configuration"  doc:name="Email Validator"  message="Provide a valid email. Error in : #[payload.Email]" 
+            email="#[payload.Email]" exceptionClass="online.ankuran.api.exception.CustomValidationException"/>
+            <validation:is-number config-ref="Validation_Configuration"  doc:name="Salary Validator"  
+            message="Salary value should be only number. Error in here : #[payload.Salary]" exceptionClass="online.ankuran.api.exception.CustomValidationException" 
+            numberType="FLOAT" value="#[payload.Salary]"/>
+        </foreach>
+        <set-payload value="true" doc:name="Set Payload"/>
+		<logger level="INFO" message="Content Validation Successful" doc:name="Logger"></logger>
+		<logger level="INFO" message="Store data in DB. (Here we haven't configured DB)" doc:name="Logger"></logger>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="#[exception.getCauseException().getMessage()]" mimeType="application/json" doc:name="Set Payload"/>
+        </catch-exception-strategy>
+     </flow>
+</mule>

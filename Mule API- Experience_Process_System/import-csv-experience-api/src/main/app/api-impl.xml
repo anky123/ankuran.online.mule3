@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+
+<!-- 
+	@Author : Ankur BHUYAN
+ 	@Website : https://ankuran.online/
+ -->
+ 
+<sub-flow name="initiate-process-api-call">
+		<message-properties-transformer	doc:name="Setting Properties for request">
+			<add-message-property key="Content-Type" value="#[message.inboundProperties.'Content-Type']" />
+		</message-properties-transformer>
+		<copy-attachments attachmentName="*" doc:name="Copy incoming properties in resquest" />
+		<http:request config-ref="csv-process-client" path="/document" method="POST" doc:name="Call Process API" requestStreamingMode="ALWAYS" >
+		</http:request>
+		<set-payload value="#[message.payloadAs(java.lang.String)]"	mimeType="application/json" doc:name="Set Payload" />
+		<dw:transform-message doc:name="Transform Message">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+{
+	timeStamp : payload.timeStamp,
+	output : payload.output,
+	additionalInfo : payload.additionalInfo
+}]]></dw:set-payload>
+		</dw:transform-message>
+		<logger message="#[payload]" level="INFO" doc:name="Logger"/>
+		<choice doc:name="Choice">
+			<when expression="#[payload.output == &quot;VALID_FILE_CONTENT&quot;]">
+				<set-payload
+					value="{&quot;timeStamp&quot;: &quot;#[payload.timeStamp]&quot;, &quot;output&quot;:&quot;VALID&quot;, 
+					&quot;additionalInfo&quot;: &quot;#[payload.additionalInfo]&quot;}"
+					doc:name="Set Payload" />
+			</when>
+			<otherwise>
+				<set-payload
+					value="{&quot;timeStamp&quot;: &quot;#[payload.timeStamp]&quot;, &quot;output&quot;:&quot;INVALID&quot;, 
+					&quot;additionalInfo&quot;: &quot;#[payload.additionalInfo]&quot;}"
+					doc:name="Set Payload" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+</mule>

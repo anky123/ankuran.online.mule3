@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domain:mule-domain xmlns:http="http://www.mulesoft.org/schema/mule/http"
+        xmlns="http://www.mulesoft.org/schema/mule/core"
+        xmlns:domain="http://www.mulesoft.org/schema/mule/ee/domain"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:spring="http://www.springframework.org/schema/beans"
+        xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+        xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/ee/domain http://www.mulesoft.org/schema/mule/ee/domain/current/mule-domain-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	
+	<!-- 
+		@Author : Ankur BHUYAN
+ 		@Website : https://ankuran.online/
+ 	-->
+ 
+	<!-- configure here resource to be shared within the domain -->
+    
+    <http:listener-config name="http-listener-config-experience-api" doc:name="HTTP Listener Configuration" host="0.0.0.0" port="8084"/>
+    
+    <http:listener-config name="http-listener-config-process-api" doc:name="HTTP Listener Configuration" host="0.0.0.0" port="8085"/>
+    
+    <http:listener-config name="http-listener-config-system-api" doc:name="HTTP Listener Configuration" host="0.0.0.0" port="8086"/>
+    
+    <http:listener-config name="http-listener-config-validation" doc:name="HTTP Listener Configuration" host="0.0.0.0" port="8087"/>
+	 
+    <http:request-config name="csv-process-client" basePath="/api" host="localhost" port="8085" responseTimeout="3600000" doc:name="HTTP Request Configuration"/>
+    
+    <http:request-config name="csv-system-client" basePath="/api" host="localhost" port="8086" responseTimeout="3600000" doc:name="HTTP Request Configuration"/>
+    
+    <http:request-config name="csv-validation-client" host="localhost" port="8087" responseTimeout="3600000" doc:name="HTTP Request Configuration"/>
+    
+
+</domain:mule-domain>

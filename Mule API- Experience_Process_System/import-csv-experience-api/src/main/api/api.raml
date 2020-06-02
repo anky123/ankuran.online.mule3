@@ -1,0 +1,68 @@
+#%RAML 1.0
+baseUri: http://localhost:8081/api
+
+title: Process csv file 
+description: Experience API to process the given csv file
+version: 1.0.0
+
+/file:
+    post:
+      body:
+        multipart/form-data:
+          description: contains the document in attachment.
+          properties:
+            file:
+              description: the csv actual file
+              required: true
+              type: file
+      responses:
+          200:
+            description: return the status of the operation
+            body:
+              application/json:
+                examples: 
+                  VALID: |
+                    {
+                    "timeStamp":"2019-01-01T00:00:00",
+                    "output":"VALID",
+                    "additionalInfo": "Successfully validated and stored the data."
+                    }
+                  INVALID: |
+                    {
+                    "timeStamp":"2019-01-01T00:00:00",
+                    "output":"INVALID",
+                    "additionalInfo": "Invalid file content, please process again with valid data."
+                    }           
+          400:
+             description: Bad request
+             body:
+               application/json:
+                examples: 
+                  bad_request:  |
+                        {
+                        "timeStamp":"2019-01-01T00:00:00",
+                        "status":"failed",
+                        "additionalInfo": "Bad request."
+                        } 
+          404:
+             description: Resource not found
+             body:
+               application/json:
+                examples: 
+                  resource_not_found:  |
+                        {
+                        "timeStamp":"2019-01-01T00:00:00",
+                        "status":"failed",
+                        "additionalInfo": "Resource not found."
+                        }
+          500:
+             description: Internal Server Error
+             body:
+               application/json:
+                examples: 
+                  internal_server_error:  |
+                        {
+                        "timeStamp":"2019-01-01T00:00:00",
+                        "status":"failed",
+                        "additionalInfo": "Internal server error."
+                        }        

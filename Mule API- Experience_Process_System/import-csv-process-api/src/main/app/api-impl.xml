@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+
+<!-- 
+	@Author : Ankur BHUYAN
+ 	@Website : https://ankuran.online/
+ -->
+
+<sub-flow name="initiate-system-api-call"  >
+        <foreach collection="#[message.inboundAttachments]" doc:name="For Each">
+            <set-variable variableName="fileName" value="#[payload.dataSource.part.fileName]" doc:name="fileName"/>
+        </foreach>
+        <set-variable variableName="fileExtension" value="#[org.mule.util.StringUtils.substringAfter(flowVars.fileName, '.')]" doc:name="fileExtension"/>
+        <choice doc:name="Choice">
+            <when expression="#[flowVars.fileExtension == &quot;csv&quot;]">
+                <logger message="File extension of incoming file is valid." level="INFO" doc:name="Logger"/>
+                <foreach collection="#[message.inboundAttachments]" doc:name="For Each">
+                    <set-variable variableName="csvData" value="#[message.payloadAs(java.lang.String)] " doc:name="Variable"/>
+                </foreach>
+                <set-payload value="#[flowVars.csvData] " mimeType="application/csv" doc:name="Set Payload"/>
+                <dw:transform-message doc:name="Transform Message" metadata:id="d7aa6dbd-77b2-44b5-b317-382860ef1294">
+                    <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+%var repalce = (aString) -> aString replace '"' with ''
+---
+payload map {
+   Id: repalce($.EmployeeNumber),
+   FirstName: $.FirstName,
+   MiddleName: $.MiddleName,
+   LastName: $.LastName,
+   Email: $.EmailId,
+   DOB: $.DOB,
+   DOJ: $.DOJ,
+   Salary: $.Salary
+} ]]></dw:set-payload>
+                </dw:transform-message>
+                <set-variable variableName="systemAPIRequest" value="#[payload]" doc:name="Variable"/>
+                <set-payload doc:name="Set Payload" value="#[flowVars.systemAPIRequest]"/>				
+				<set-property propertyName="Content-Type" value="application/json" doc:name="Set Outbound Header" mimeType="application/json"/>
+        		<http:request config-ref="csv-system-client" path="/data" method="POST" requestStreamingMode="ALWAYS" doc:name="Call System API"/>
+        		<set-payload value="#[message.payloadAs(java.lang.String)]" mimeType="application/json" doc:name="Set Payload"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+{
+	timeStamp : payload.timeStamp,
+	output : payload.output,
+	additionalInfo : payload.additionalInfo
+}]]></dw:set-payload>
+        </dw:transform-message>
+                <set-payload value="{&quot;timeStamp&quot;: &quot;#[payload.timeStamp]&quot;, 
+                &quot;output&quot;:&quot;#[payload.output]&quot;, &quot;additionalInfo&quot;: &quot;#[payload.additionalInfo]&quot;}" doc:name="Set Payload"/>
+            </when>
+            <otherwise>
+                <logger message="File extension of incoming file is invalid." level="INFO" doc:name="Logger"/>
+                <set-payload value="{&quot;timeStamp&quot;: &quot;#[server.dateTime.format(&quot;dd-MM-yyyy HH:mm:ss&quot;).toUpperCase()]&quot;,
+                &quot;output&quot;:&quot;INVALID_FILE_NAME&quot;, &quot;additionalInfo&quot;: 
+                &quot;Incoming file extention is invalid, file name : #[flowVars.fileName]&quot;}" doc:name="Set Payload"/>
+            </otherwise>
+        </choice> 
+	</sub-flow> 
+</mule>

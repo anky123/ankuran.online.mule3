@@ -1,0 +1,71 @@
+#%RAML 1.0
+baseUri: http://localhost:8081/api
+title: Process API for csv file process
+description: Process API to process the given csv file
+version: 1.0.0
+/document:
+    post:
+      body:
+        multipart/form-data:
+          description: contains the document in attachment.
+          properties:
+            metadata:
+              description: the metadata describing the content
+              required: false
+              type: string
+            file:
+              description: the actual file
+              required: true
+              type: file
+      responses:
+          200:
+            description: return the status of the operation
+            body:
+              application/json:
+                examples: 
+                  VALID_FILE_NAME: |
+                    {
+                    "timeStamp":"2019-01-01T00:00:00",
+                    "output":"VALID",
+                    "additionalInfo": "Successfully validated the file name."
+                    }                    
+                  INVALID_FILE_NAME: |
+                    {
+                    "timeStamp":"2019-01-01T00:00:00",
+                    "output":"INVALID",
+                    "additionalInfo": "Invalid file name, please process again with valid filename."
+                    }
+                         
+          400:
+             description: Bad request
+             body:
+               application/json:
+                examples: 
+                  bad_request:  |
+                        {
+                        "timeStamp":"2019-01-01T00:00:00",
+                        "status":"failed",
+                        "additionalInfo": "Bad request."
+                        } 
+          404:
+             description: Resource not found
+             body:
+               application/json:
+                examples: 
+                  resource_not_found:  |
+                        {
+                        "timeStamp":"2019-01-01T00:00:00",
+                        "status":"failed",
+                        "additionalInfo": "Resource not found."
+                        }
+          500:
+             description: Internal Server Error
+             body:
+               application/json:
+                examples: 
+                  internal_server_error:  |
+                        {
+                        "timeStamp":"2019-01-01T00:00:00",
+                        "status":"failed",
+                        "additionalInfo": "Internal server error."
+                        }        

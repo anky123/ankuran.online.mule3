@@ -1,0 +1,75 @@
+#%RAML 1.0
+baseUri: http://localhost:8081/api
+title: Process csv file 
+description: System API to process the given csv file
+version: 1.0.0
+/data:
+    post:
+      body:
+        application/json:
+            example: |
+              {
+                "Employee": [
+                  {
+                    "Id": "1",
+                    "FirstName": "Ankur",
+                    "MiddleName": "Jyoti",
+                    "LastName": "Bhuyan",
+                    "Email": "ab@gmail.com",
+                    "DOB": "23/09/1990",
+                    "DOJ": "10/1/2010",
+                    "Salary": "50000.9"
+                  }
+                ]
+              }
+      responses:
+          200:
+            description: return the status of the operation
+            body:
+              application/json:
+                examples:                  
+                  VALID_FILE_CONTENT: |
+                    {
+                    "timeStamp":"2019-01-01T00:00:00",
+                    "output":"VALID",
+                    "additionalInfo": "Successfully validated the file content."
+                    }  
+                  INVALID_FILE_CONTENT: |
+                    {
+                    "timeStamp":"2019-01-01T00:00:00",
+                    "output":"INVALID",
+                    "additionalInfo": "Invalid file content, please process again with valid data."
+                    }        
+          400:
+             description: Bad request
+             body:
+               application/json:
+                examples: 
+                  bad_request:  |
+                        {
+                        "timeStamp":"2019-01-01T00:00:00",
+                        "status":"failed",
+                        "additionalInfo": "Bad request."
+                        } 
+          404:
+             description: Resource not found
+             body:
+               application/json:
+                examples: 
+                  resource_not_found:  |
+                        {
+                        "timeStamp":"2019-01-01T00:00:00",
+                        "status":"failed",
+                        "additionalInfo": "Resource not found."
+                        }
+          500:
+             description: Internal Server Error
+             body:
+               application/json:
+                examples: 
+                  internal_server_error:  |
+                        {
+                        "timeStamp":"2019-01-01T00:00:00",
+                        "status":"failed",
+                        "additionalInfo": "Internal server error."
+                        }        
