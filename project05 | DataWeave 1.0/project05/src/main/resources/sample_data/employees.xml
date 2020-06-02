@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<employee>
+	<first_name>Ankur</first_name>
+	<last_name>Bhuyan</last_name>
+	<email_address>ankur.bhuyan@gmail.com</email_address>
+	<salary>56000</salary>
+	<married>false</married>
+</employee>

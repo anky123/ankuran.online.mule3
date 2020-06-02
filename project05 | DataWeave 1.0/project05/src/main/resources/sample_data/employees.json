@@ -1,0 +1,25 @@
+{
+  "employees": [
+    {
+      "firstName":"Ankur",
+      "lastName":"Bhuyan",
+      "email":"ankur.bhuyan@gmail.com",
+      "salary":36000.89,
+      "married":false
+    },
+    {
+      "firstName":"Alex",
+      "lastName":"Surdu",
+      "email":"alex.surdu@gmail.com",
+      "salary":35000.56,
+      "married":true
+      },
+    {
+      "firstName":"Cedric",
+      "lastName":"Firriera",
+      "email":"cedric.firriera@gmail.com",
+      "salary":31000.12,
+      "married":true
+      }
+  ]
+}

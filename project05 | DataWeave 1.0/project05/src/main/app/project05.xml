@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" 
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" 
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" 
+	xmlns="http://www.mulesoft.org/schema/mule/core" 
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+	
+	<!-- 
+		@Author : Ankur BHUYAN
+ 		@Website : https://ankuran.online/
+ 	-->
+ 	
+	<!-- Flows to transform JSON data to XML type using DatWeave -->
+	<flow name="mainFlow01">
+		<http:listener config-ref="HTTP_Listener_Configuration" path="/withoutDwlFile" doc:name="HTTP"/>
+		<logger message="#['INFO - Request landed in ' + flow.name + '\n']" level="INFO" doc:name="Logger"/>
+        <flow-ref name="dwXMLExampleFlow" doc:name="Calling Sub Flow"/>
+        <logger message="#['INFO - Response sends from ' + flow.name + '\n']" level="INFO" doc:name="Logger"/>
+	</flow>	
+	<sub-flow name="dwXMLExampleFlow">
+		<dw:transform-message doc:name="Transform Message" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload mimeType="application/json" doc:sample="sample_data/employees.json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/xml
+---
+employee : {
+	first_name : payload.employees[0].firstName,
+	last_name: payload.employees[0].lastName,
+	email_address: payload.employees[0].email,
+	salary: payload.employees[0].salary,
+	married: payload.employees[0].married as :string
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Flows to transform JSON data to CSV type using DatWeave in External .dwl file-->
+	<flow name="mainFlow02">
+		<http:listener config-ref="HTTP_Listener_Configuration" path="/withDwlFile" doc:name="HTTP"/>
+		<logger message="#['INFO - Request landed in ' + flow.name + '\n']" level="INFO" doc:name="Logger"/>
+        <flow-ref name="dwCSVExampleFlow" doc:name="Calling Sub Flow"/>
+        <logger message="#['INFO - Response sends from ' + flow.name + '\n']" level="INFO" doc:name="Logger"/>
+	</flow>	
+	<sub-flow name="dwCSVExampleFlow">
+		<dw:transform-message doc:name="Transform Message" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload mimeType="application/json" doc:sample="sample_data/employees.json"/>
+			<dw:set-payload resource="classpath:dwl_files/transform_employee_json_to_csv.dwl"/>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Flows to transform JSON data to a variable type using DatWeave in external .dwl file -->
+	<flow name="mainFlow03">
+		<http:listener config-ref="HTTP_Listener_Configuration" path="/variables" doc:name="HTTP"/>
+		<logger message="#['INFO - Request landed in ' + flow.name + '\n']" level="INFO" doc:name="Logger"/>
+        <flow-ref name="dwVariablesExampleFlow" doc:name="Calling Sub Flow"/>
+        <logger message="#['INFO - Response sends from ' + flow.name + '\n']" level="INFO" doc:name="Logger"/>
+	</flow>	
+	<sub-flow name="dwVariablesExampleFlow">
+		<dw:transform-message doc:name="Transform Message" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload mimeType="application/json" doc:sample="sample_data/employees.json"/>
+			<dw:set-variable variableName="fullName" resource="classpath:dwl_files/transform_to_fullName.dwl"/>
+			
+			<dw:set-session-variable variableName="employeeDetails"><![CDATA[%dw 1.0
+%output application/java
+---
+"Employee name is " ++ payload.employees[0].firstName ++ " " ++ payload.employees[0].lastName ++ ", and his email Address is " ++  payload.employees[0].email]]></dw:set-session-variable>
+		</dw:transform-message>
+		<logger level="INFO" message="#['INFO - Flow Variable : ' + flowVars.fullName]" doc:name="Logger"/>
+		<logger level="INFO" message="#['INFO - Session Variable : ' + sessionVars.employeeDetails]" doc:name="Logger"/>
+		<set-payload doc:name="prepare Response" value="#[sessionVars.employeeDetails]"/>
+	</sub-flow>
+	
+	<!-- Flows to transform JSON data to a Object type using dw() function -->
+	<flow name="mainFlow04">
+		<http:listener config-ref="HTTP_Listener_Configuration" path="/dwFunction" doc:name="HTTP"/>
+		<logger message="#['INFO - Request landed in ' + flow.name + '\n']" level="INFO" doc:name="Logger"/>
+        <flow-ref name="dwFunctionExampleFlow" doc:name="Calling Sub Flow"/>
+        <logger message="#['INFO - Response sends from ' + flow.name + '\n']" level="INFO" doc:name="Logger"/>
+	</flow>	
+	<sub-flow name="dwFunctionExampleFlow">
+		<set-variable doc:name="firstEmployee" variableName="firstEmployee" value="#[dw('{fName:payload.employees.firstName[0] , lName:payload.employees.lastName[0] , email:payload.employees.email[0]}')]" mimeType="application/json"/>
+		<set-payload doc:name="prepare Response" value="#[flowVars.firstEmployee]" mimeType="application/json"/>
+	</sub-flow>
+	
+</mule>

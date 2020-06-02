@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+	
+	<!-- 
+		@Author : Ankur BHUYAN
+ 		@Website : https://ankuran.online/
+ 	-->
+ 	
+	<flow name="mainExample">
+		<http:listener config-ref="HTTP_Listener_Configuration" path="/test/allflows" doc:name="HTTP"/>
+		<set-payload value="main flow" doc:name="Set Payload"/>
+        <logger message="MAIN FLOW -- Started flow - { payload = #[message.payload] }" level="INFO" doc:name="Logger"/>
+        <flow-ref name="subFlow" doc:name="Calling Sub Flow"/>
+        <logger message="MAIN FLOW -- Called sub flow - { payload = #[message.payload] }" level="INFO" doc:name="Logger"/>
+        <flow-ref name="privateFlow" doc:name="Calling Private Flow"/>
+        <logger message="MAIN FLOW -- Called private flow - { payload = #[message.payload] }" level="INFO" doc:name="Logger"/>
+	</flow>	
+	
+	<sub-flow name="subFlow">
+		<set-payload value="sub-flow" doc:name="Set Payload"/>
+        <logger message="SUBFLOW - { payload = #[message.payload] }" level="INFO" doc:name="Logger"/>
+	</sub-flow>
+	
+	<flow name="privateFlow">
+		<set-payload value="private-flow" doc:name="Set Payload"/>
+        <logger message="PRIVATE FLOW - { payload = #[message.payload] }" level="INFO" doc:name="Logger"/>
+	</flow>
+	
+	
+</mule>

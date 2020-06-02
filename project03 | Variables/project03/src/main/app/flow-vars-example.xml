@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+	
+	<!-- 
+		@Author : Ankur BHUYAN
+ 		@Website : https://ankuran.online/
+ 	-->
+ 	
+	<flow name="flowVariableExample">
+		<http:listener config-ref="HTTP_Listener_Configuration_1" path="/test/flow" doc:name="HTTP"/>
+		<set-variable variableName="firstName" value="#[&quot;Ankur&quot;]" doc:name="firstName"/>
+		
+		<flow-ref name="privateFlow1" doc:name="Call private flow"/>
+		<logger message="#['Flow variable in same flow after private flow call :' + flowVars.firstName + '\n']" level="INFO" doc:name="Logger"/>
+		
+		<flow-ref name="subFlow1" doc:name="Call sub flow"/>
+		<logger message="#['Flow variable in same flow after sub flow call :' + flowVars.firstName + '\n']" level="INFO" doc:name="Logger"/>
+		
+		<http:request config-ref="HTTP_Request_Configuration" path="/testFlowVars1" method="GET" doc:name="HTTP"/>
+		<logger message="#['Flow variable in same flow  after call a flow with HTTP :' + flowVars.firstName + '\n']" level="INFO" doc:name="Logger"/>
+		
+		<vm:outbound-endpoint exchange-pattern="request-response" path="flowVariables" doc:name="VM / Variables Demo"/>
+		<logger message="#['Flow variable in same flow  after call a flow with VM :' + flowVars.firstName + '\n']" level="INFO" doc:name="Logger"/>
+	</flow>	
+	
+	<flow name="privateFlow1">
+		<logger message="Flow variable in private flow : #[flowVars.firstName]" level="INFO" doc:name="Logger"/>
+	</flow>
+	
+	<sub-flow name="subFlow1">
+		<logger message="Flow variable in sub flow : #[flowVars.firstName]" level="INFO" doc:name="Logger"/>
+	</sub-flow>
+	
+	<flow name="flowWithHTTP1">
+		<http:listener config-ref="HTTP_Listener_Configuration_3" path="/testFlowVars1" doc:name="HTTP"/>
+		<logger message="Flow variable in flow with HTTP : #[flowVars.firstName]" level="INFO" doc:name="Logger"/>
+	</flow>
+	
+	<flow name="flowWithVM1">
+        <vm:inbound-endpoint exchange-pattern="request-response" path="flowVariables" doc:name="VM / Variables Demo"/>
+        <logger message="Flow variable in flow with VM : #[flowVars.firstName]" level="INFO" doc:name="Logger"/>
+    </flow>
+	
+</mule>
