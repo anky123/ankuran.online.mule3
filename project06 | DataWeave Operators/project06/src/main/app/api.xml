@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+    <apikit:config name="api-config" raml="api.raml" consoleEnabled="false" doc:name="Router" />
+    <flow name="api-main">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/api/*" doc:name="HTTP" />
+        <apikit:router config-ref="api-config" doc:name="APIkit Router" />
+        <exception-strategy ref="api-apiKitGlobalExceptionMapping" doc:name="Reference Exception Strategy" />
+    </flow>
+    <flow name="api-console">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/console/*" doc:name="HTTP" />
+        <apikit:console config-ref="api-config" doc:name="APIkit Console" />
+    </flow>
+    <flow name="get:/operators/abs:api-config">
+        <flow-ref doc:name="example-of-abs" name="example-of-abs" />
+    </flow>
+    <flow name="get:/operators/addPeriodOfTime:api-config">
+        <flow-ref doc:name="example-of-add-period-of-time" name="example-of-add-period-of-time" />
+    </flow>
+    <flow name="get:/operators/and:api-config">
+        <flow-ref doc:name="example-of-and" name="example-of-and" />
+    </flow>
+    <flow name="get:/operators/appendTime:api-config">
+        <flow-ref doc:name="example-of-append-time" name="example-of-append-time" />
+    </flow>
+    <flow name="get:/operators/appendTimeZone:api-config">
+        <flow-ref doc:name="example-of-append-time-zone" name="example-of-append-time-zone" />
+    </flow>
+    <flow name="get:/operators/arrayPush:api-config">
+        <flow-ref doc:name="example-of-array-push" name="example-of-array-push" />
+    </flow>
+    <flow name="get:/operators/arrayRemove:api-config">
+        <flow-ref doc:name="example-of-remove-from-array" name="example-of-remove-from-array" />
+    </flow>
+    <flow name="get:/operators/averageOfArray:api-config">
+        <flow-ref doc:name="example-of-average-of-array" name="example-of-average-of-array" />
+    </flow>
+    <flow name="get:/operators/camelize:api-config">
+        <flow-ref doc:name="example-of-camelize" name="example-of-camelize" />
+    </flow>
+    <flow name="get:/operators/capitalize:api-config">
+        <flow-ref doc:name="example-of-capitalize" name="example-of-capitalize" />
+    </flow>
+    <flow name="get:/operators/ceil:api-config">
+        <flow-ref doc:name="example-of-ceil" name="example-of-ceil" />
+    </flow>
+    <flow name="get:/operators/coerce:api-config">
+        <flow-ref doc:name="example-of-coerce" name="example-of-coerce" />
+    </flow>
+    <flow name="get:/operators/concat:api-config">
+        <flow-ref doc:name="example-of-concat" name="example-of-concat" />
+    </flow>
+    <flow name="get:/operators/contains:api-config">
+        <flow-ref doc:name="example-of-contains" name="example-of-contains" />
+    </flow>
+    <flow name="get:/operators/dasherize:api-config">
+        <flow-ref doc:name="example-of-dasherize" name="example-of-dasherize" />
+    </flow>
+    <flow name="get:/operators/distinctBy:api-config">
+        <flow-ref doc:name="example-of-distinctBy" name="example-of-distinctBy" />
+    </flow>
+    <flow name="get:/operators/division:api-config">
+        <flow-ref doc:name="example-of-division" name="example-of-division" />
+    </flow>
+    <flow name="get:/operators/endsWith:api-config">
+        <flow-ref doc:name="example-of-endsWith" name="example-of-endsWith" />
+    </flow>
+    <flow name="get:/operators/filter:api-config">
+        <flow-ref doc:name="example-of-filter" name="example-of-filter" />
+    </flow>
+    <flow name="get:/operators/find:api-config">
+        <flow-ref doc:name="example-of-find" name="example-of-find" />
+    </flow>
+    <flow name="get:/operators/flatten:api-config">
+        <flow-ref doc:name="example-of-flatten" name="example-of-flatten" />
+    </flow>
+    <flow name="get:/operators/floor:api-config">
+        <flow-ref doc:name="example-of-floor" name="example-of-floor" />
+    </flow>
+    <flow name="get:/operators/getTimeUnit:api-config">
+        <flow-ref doc:name="example-of-get-time-unit" name="example-of-get-time-unit" />
+    </flow>
+    <flow name="get:/operators/groupBy:api-config">
+        <flow-ref doc:name="example-of-groupBy" name="example-of-groupBy" />
+    </flow>
+    <flow name="get:/operators/is:api-config">
+        <flow-ref doc:name="example-of-is" name="example-of-is" />
+    </flow>
+    <flow name="get:/operators/joinBy:api-config">
+        <flow-ref doc:name="example-of-joinBy" name="example-of-joinBy" />
+    </flow>
+    <flow name="get:/operators/lower:api-config">
+        <flow-ref doc:name="example-of-lower" name="example-of-lower" />
+    </flow>
+    <flow name="get:/operators/map:api-config">
+        <flow-ref doc:name="example-of-map" name="example-of-map" />
+    </flow>
+    <flow name="get:/operators/mapObject:api-config">
+        <flow-ref doc:name="example-of-mapObject" name="example-of-mapObject" />
+    </flow>
+    <flow name="get:/operators/match:api-config">
+        <flow-ref doc:name="example-of-match" name="example-of-match" />
+    </flow>
+    <flow name="get:/operators/matches:api-config">
+        <flow-ref doc:name="example-of-matches" name="example-of-matches" />
+    </flow>
+    <flow name="get:/operators/max:api-config">
+        <flow-ref doc:name="example-of-max" name="example-of-max" />
+    </flow>
+    <flow name="get:/operators/min:api-config">
+        <flow-ref doc:name="example-of-min" name="example-of-min" />
+    </flow>
+    <flow name="get:/operators/minus:api-config">
+        <flow-ref doc:name="example-of-minus" name="example-of-minus" />
+    </flow>
+    <flow name="get:/operators/mod:api-config">
+        <flow-ref doc:name="example-of-mod" name="example-of-mod" />
+    </flow>
+    <flow name="get:/operators/multiply:api-config">
+        <flow-ref doc:name="example-of-multiply" name="example-of-multiply" />
+    </flow>
+    <flow name="get:/operators/now:api-config">
+        <flow-ref doc:name="example-of-now" name="example-of-now" />
+    </flow>
+    <flow name="get:/operators/or:api-config">
+        <flow-ref doc:name="example-of-or" name="example-of-or" />
+    </flow>
+    <flow name="get:/operators/orderBy:api-config">
+        <flow-ref doc:name="example-of-orderBy" name="example-of-orderBy" />
+    </flow>
+    <flow name="get:/operators/ordinalize:api-config">
+        <flow-ref doc:name="example-of-ordinalize" name="example-of-ordinalize" />
+    </flow>
+    <flow name="get:/operators/pluck:api-config">
+        <flow-ref doc:name="example-of-pluck" name="example-of-pluck" />
+    </flow>
+    <flow name="get:/operators/pluralize:api-config">
+        <flow-ref doc:name="example-of-pluralize" name="example-of-pluralize" />
+    </flow>
+    <flow name="get:/operators/plus:api-config">
+        <flow-ref doc:name="example-of-plus" name="example-of-plus" />
+    </flow>
+    <flow name="get:/operators/pow:api-config">
+        <flow-ref doc:name="example-of-pow" name="example-of-pow" />
+    </flow>
+    <flow name="get:/operators/reduce:api-config">
+        <flow-ref doc:name="example-of-reduce" name="example-of-reduce" />
+    </flow>
+    <flow name="get:/operators/remove:api-config">
+        <flow-ref doc:name="example-of-remove" name="example-of-remove" />
+    </flow>
+    <flow name="get:/operators/removeMatchingFromArray:api-config">
+        <flow-ref doc:name="example-of-remove-matching-from-array" name="example-of-remove-matching-from-array" />
+    </flow>
+    <flow name="get:/operators/replace:api-config">
+        <flow-ref doc:name="example-of-replace" name="example-of-replace" />
+    </flow>
+    <flow name="get:/operators/round:api-config">
+        <flow-ref doc:name="example-of-round" name="example-of-round" />
+    </flow>
+    <flow name="get:/operators/scan:api-config">
+        <flow-ref doc:name="example-of-scan" name="example-of-scan" />
+    </flow>
+    <flow name="get:/operators/shiftTimeZone:api-config">
+        <flow-ref doc:name="example-of-shift-time-zone" name="example-of-shift-time-zone" />
+    </flow>
+    <flow name="get:/operators/similar:api-config">
+        <flow-ref doc:name="example-of-similar" name="example-of-similar" />
+    </flow>
+    <flow name="get:/operators/singularize:api-config">
+        <flow-ref doc:name="example-of-singularize" name="example-of-singularize" />
+    </flow>
+    <flow name="get:/operators/sizeOf:api-config">
+        <flow-ref doc:name="example-of-sizeOf" name="example-of-sizeOf" />
+    </flow>
+    <flow name="get:/operators/splitBy:api-config">
+        <flow-ref doc:name="example-of-splitBy" name="example-of-splitBy" />
+    </flow>
+    <flow name="get:/operators/sqrt:api-config">
+        <flow-ref doc:name="example-of-sqrt" name="example-of-sqrt" />
+    </flow>
+    <flow name="get:/operators/startsWith:api-config">
+        <flow-ref doc:name="example-of-startsWith" name="example-of-startsWith" />
+    </flow>
+    <flow name="get:/operators/substring:api-config">
+        <flow-ref doc:name="example-of-substring" name="example-of-substring" />
+    </flow>
+    <flow name="get:/operators/subtractPeriodOfTime:api-config">
+        <flow-ref doc:name="example-of-subtract-period-of-time" name="example-of-subtract-period-of-time" />
+    </flow>
+    <flow name="get:/operators/subtractTwoDates:api-config">
+        <flow-ref doc:name="example-of-subtract-two-dates" name="example-of-subtract-two-dates" />
+    </flow>
+    <flow name="get:/operators/trim:api-config">
+        <flow-ref doc:name="example-of-trim" name="example-of-trim" />
+    </flow>
+    <flow name="get:/operators/typeOf:api-config">
+        <flow-ref doc:name="example-of-typeOf" name="example-of-typeOf" />
+    </flow>
+    <flow name="get:/operators/underscore:api-config">
+        <flow-ref doc:name="example-of-underscore" name="example-of-underscore" />
+    </flow>
+    <flow name="get:/operators/unzip:api-config">
+        <flow-ref doc:name="example-of-unzip-arrays" name="example-of-unzip-arrays" />
+    </flow>
+    <flow name="get:/operators/upper:api-config">
+        <flow-ref doc:name="example-of-upper" name="example-of-upper" />
+    </flow>
+    <flow name="get:/operators/zip:api-config">
+        <flow-ref doc:name="example-of-zip-arrays" name="example-of-zip-arrays" />
+    </flow>
+    <apikit:mapping-exception-strategy name="api-apiKitGlobalExceptionMapping">
+        <apikit:mapping statusCode="404">
+            <apikit:exception value="org.mule.module.apikit.exception.NotFoundException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Resource not found&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="405">
+            <apikit:exception value="org.mule.module.apikit.exception.MethodNotAllowedException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Method not allowed&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="415">
+            <apikit:exception value="org.mule.module.apikit.exception.UnsupportedMediaTypeException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Unsupported media type&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="406">
+            <apikit:exception value="org.mule.module.apikit.exception.NotAcceptableException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Not acceptable&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="400">
+            <apikit:exception value="org.mule.module.apikit.exception.BadRequestException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Bad request&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+    </apikit:mapping-exception-strategy>
+</mule>

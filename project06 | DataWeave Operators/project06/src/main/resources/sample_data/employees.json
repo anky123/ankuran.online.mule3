@@ -1,0 +1,36 @@
+{
+  "employees": [
+    {
+      "firstName":"Ankur",
+      "lastName":"Bhuyan",
+      "email":"ankur.bhuyan@gmail.com",
+      "salary":36000.89,
+      "age":30,
+      "married":false
+    },
+    {
+      "firstName":"Alex",
+      "lastName":"Surdu",
+      "email":"alex.surdu@ankuran.com",
+      "salary":35000.56,
+      "age":45,
+      "married":true
+      },
+    {
+      "firstName":"Cedric",
+      "lastName":"Firriera",
+      "email":"cedric.firriera@yahoo.com",
+      "salary":31000.12,
+      "age":43,
+      "married":true
+      },
+    {
+      "firstName":"Andrew",
+      "lastName":"Damien",
+      "email":"andrew.damien@gmail.com",
+      "salary":51000.56,
+      "age":33,
+      "married":false
+      }
+  ]
+}

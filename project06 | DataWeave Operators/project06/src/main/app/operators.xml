@@ -1,0 +1,1153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" 
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" 
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" 
+	xmlns="http://www.mulesoft.org/schema/mule/core" 
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+	
+	<!-- Sub flow to explain how "map" operator works -->
+	<sub-flow name="example-of-map">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+%var conversionRate = 79.34
+---
+{
+	employees: ["Ankur", "Alex", "Cedric"] map  upper $,
+	
+	employees: ["Ankur", "Alex", "Cedric"] map ((firstName) -> $$ ++ ":" ++ upper firstName),
+	
+	salary: [3600.90, 3100.78, 3098.12] map  round $,
+	
+	salaryInINR: [3600.90, 3100.78, 3098.12] map ( $ * conversionRate )
+}
+]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "mapObject" operator works -->
+	<sub-flow name="example-of-mapObject">
+		<logger message="#[message]" level="INFO" doc:name="Logger"/>
+		<set-payload value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;employees&gt;
+	&lt;employee_1_salary&gt;3600.90&lt;/employee_1_salary&gt;
+	&lt;employee_2_salary&gt;3100.78&lt;/employee_2_salary&gt;
+	&lt;employee_3_salary&gt;3098.12&lt;/employee_3_salary&gt;
+&lt;/employees&gt;" doc:name="Set Input" mimeType="application/xml"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+%var conversionRate = 79.34
+---
+payload.employees mapObject (
+'$$':{
+    "In EUR" : $,
+    "In INR" : $ * conversionRate
+  }
+)
+]]></dw:set-payload>
+		</dw:transform-message>
+		<logger level="INFO" doc:name="Logger"/>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "pluck" operator works -->
+	<sub-flow name="example-of-pluck">
+		<set-payload value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;employees&gt;
+	&lt;employee_1_salary&gt;3600.90&lt;/employee_1_salary&gt;
+	&lt;employee_2_salary&gt;3100.78&lt;/employee_2_salary&gt;
+	&lt;employee_3_salary&gt;3098.12&lt;/employee_3_salary&gt;
+&lt;/employees&gt;" doc:name="Set Input" mimeType="application/xml"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+%var conversionRate = 79.34
+---
+{
+	"Employees" : payload.employees pluck $$,
+	"In EUR" : payload.employees pluck $,
+	"In INR" : payload.employees pluck $ * conversionRate
+}
+
+]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "filter" operator works -->
+	<sub-flow name="example-of-filter">
+		<flow-ref doc:name="set-json-payload" name="set-json-payload"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+%var conversionRate = 79.34
+---
+{
+	salaryGreaterThan3K: [3600.90, 3100.78, 2998.12] filter $ > 3000,
+	
+	salaryLessThan3K: [3600.90, 3100.78, 2998.12] filter $ < 3000,
+	
+	biggerThanTwo: [0, 1, 2, 3, 4, 5] filter $ > 2,
+	
+	filtered: { aa: "a", bb: "b", cc: "c", dd: "d" } filter $ == "d",
+	
+	name : (payload.employees.firstName) filter $ != "Ankur"
+}
+]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "remove" operator works -->
+	<sub-flow name="example-of-remove">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	
+	removeFirstName: ["Ankur", "Bhuyan", "ankur.bhuyan@gmail.com"] - "Ankur",
+	
+	removeFirstNameByKey: {firstName:"Ankur", lastName:"Bhuyan", email:"ankur.bhuyan@gmail.com"} - "firstName",
+	
+	removeFirstNameByKeyValue: {firstName:"Ankur", lastName:"Bhuyan", email:"ankur.bhuyan@gmail.com"} -- {firstName:"Ankur"}
+	
+}
+]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "and" operator works -->
+	<sub-flow name="example-of-and">
+		<flow-ref doc:name="set-json-payload" name="set-json-payload"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload doc:sample="sample_data/employees.json" mimeType="application/json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload.employees filter (($.married == true) and ($.age >= 30)) map {
+      Married_Person_Name: $.firstName ++ " " ++ $.lastName,
+      Email: $.email
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "or" operator works -->
+	<sub-flow name="example-of-or">
+		<flow-ref doc:name="set-json-payload" name="set-json-payload"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload doc:sample="sample_data/employees.json" mimeType="application/json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload.employees map {
+Married: $.firstName ++ " " ++ $.lastName when ($.married == true) or ($.age >= 30) otherwise null
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "is" operator works -->
+	<sub-flow name="example-of-is">
+		<flow-ref doc:name="set-json-payload" name="set-json-payload"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload doc:sample="sample_data/employees.json" mimeType="application/json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload.employees map {
+	json_is_object: $ is :object,
+
+	firstName_is_object: $.firstName is :object,
+	firstName_is_string: $.firstName is :string,
+
+	salary_is_string: $.salary is :string,
+	salary_is_number: $.salary is :number,
+
+	married_is_string: $.married is :string,
+	married_is_boolean: $.married is :boolean
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "concat" operator works -->
+	<sub-flow name="example-of-concat">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload doc:sample="sample_data/employees.json" mimeType="application/json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+PersonalDetails: {
+	a: [0,1,2] ++ [3,4],
+	
+	Name : "Ankur" ++ " " ++ "Bhuyan",
+	
+	Details: 
+		{
+			Email : "ankur.bhuyan@gmail.com"
+		} 
+		++ 
+		{
+			Technology: "Java"
+		}
+	
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "contains" operator works -->
+	<sub-flow name="example-of-contains">
+		<flow-ref doc:name="set-json-payload" name="set-json-payload"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload doc:sample="sample_data/employees.json" mimeType="application/json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	IsAnkurPresentInArray: ["Ankur", "Bhuyan"] contains "Ankur",
+	IsMulePresentInString: "Hello, My Name is Ankur. I love to work in Mulesoft." contains "Mule"
+}
+]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "Coerce" works -->
+	<sub-flow name="example-of-coerce">
+		<flow-ref doc:name="set-json-payload" name="set-json-payload"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload doc:sample="sample_data/employees.json" mimeType="application/json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+
+{
+  a: 1 as :string {format: "##,##"},
+  b: now as :string {format: "yyyy-MM-dd"},
+  c: now as :string {format: "dd"},
+  d: true as :string,
+  
+  e: 1 as :string ,
+  f: 1 as :number,
+  
+  g: now as :number {unit: "seconds"},
+  h: now as :number {unit: "milliseconds"},
+  
+  i: "2020-05-07 07:05:32.000" as :localdatetime {format: "yyyy-MM-dd HH:mm:ss.SSS"},
+  j: 1588890469 as :datetime,
+  
+  f : payload as :object {class : "com.ankuran.pojo.Employees"}
+}
+
+
+]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "typeOf" operator works -->
+	<sub-flow name="example-of-typeOf">
+		<flow-ref doc:name="set-json-payload" name="set-json-payload"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload doc:sample="sample_data/employees.json" mimeType="application/json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	test: typeOf payload.test,
+	object: typeOf payload,
+	
+	string: typeOf "Test",
+	
+	number1: typeOf 1,
+	number2: typeOf 1.23,
+	
+	boolean: typeOf true
+}
+]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "flatten" operator works -->
+	<sub-flow name="example-of-flatten">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a: flatten [[1,2],[3,4,0.5],[6,0.7]],
+	b: flatten [["Ankur","Bhuyan"],["John","Allen"]]
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "sizeOf" operator works -->
+	<sub-flow name="example-of-sizeOf">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+  arraySize: sizeOf ["Ankur","Jyoti","Bhuyan"],
+  textSize: sizeOf "Ankur",
+  objectSize: sizeOf {a:1,b:2}
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "array push" works -->
+	<sub-flow name="example-of-array-push">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a1: [0, 1, 2] + 3,
+	a2: "A" + ["B", "C", "D"]
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "remove from array" works -->
+	<sub-flow name="example-of-remove-from-array">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a1: [0, 1, 2] - 0,
+	a2: ["B", "C", "D"] - "C",
+	a3: [{a: "a"},{b: "b"},{c: "c"}] - {a: "a"}
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "remove matching from array" works -->
+	<sub-flow name="example-of-remove-matching-from-array">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a1: [0, 1, 2, 3, 4] -- [0, 1],
+	a1: [0, 1, 1, 2, 3, 4] -- [0, 1],
+	
+	a2: ["A", "B", "C", "D"] - "C",
+	a2: ["A", "B", "C", "D"] -- ["C", "D"],
+	a2: ["A", "B", "C", "D", "D"] -- ["C", "D"]
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "average of array" works -->
+	<sub-flow name="example-of-average-of-array">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+  a: avg [1..10],
+  b: avg [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  
+  c: avg [1..5],
+  d: avg [1, 2, 3, 4, 5],
+  
+  d: avg [0..100],
+  e: avg [1..100],
+  
+  f: avg [0..1000],
+  g: avg [1..1000]
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "reduce" operator works -->
+	<sub-flow name="example-of-reduce">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	sum: [0, 1, 2] reduce ($$ + $),
+	concat: ["a", "b", "c"] reduce ($$ ++ $),
+	
+	array: [{a:"a"}, {b:"b"}, {c:"c"}],
+	merge_array: [{a:"a"}, {b:"b"}, {c:"c"}] reduce ($$ ++ $),
+
+	concat_value_in_starting: [1,2,3] reduce ((val) -> 0 ++ val),
+	concat_value_in_starting: [1,2,3] reduce ((val, data=0) -> data ++ val),
+
+	concat_value_in_starting: ["a", "b", "c"] reduce ((val) -> "z" ++ val),
+	concat_value_in_starting: ["a", "b", "c"] reduce ((val, data="z") -> data ++ val)	
+}
+]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "joinBy" operator works -->
+	<sub-flow name="example-of-joinBy">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a1: ["a","b","c"] joinBy "-",
+	a1: [1,2,3] joinBy ","
+}
+]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "splitBy" operator works -->
+	<sub-flow name="example-of-splitBy">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a: "a-b-c" splitBy "-",
+	b: "1,2,3" splitBy ","
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "orderBy" operator works -->
+	<sub-flow name="example-of-orderBy">
+		<flow-ref doc:name="set-json-payload" name="set-json-payload"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload doc:sample="sample_data/employees.json" mimeType="application/json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	ascendingOrder: [3,8,1,9,5,0,6,2,7] orderBy $,
+	descendingOrder: ([3,8,1,9,5,0,6,2,7] orderBy $)[-1 to 0],
+	ascendingOrder: ["A","C","E","D","B"] orderBy $,
+	descendingOrder: (["A","C","E","D","B"] orderBy $)[-1 to 0],
+	ascendingOrderOfFirstName : payload.employees.firstName orderBy $,
+	ascendingOrderOfLastName : payload.employees.lastName orderBy $,
+	ascendingOrderOfSalary : payload.employees.salary orderBy $,
+	ascendingOrderOfAge : payload.employees.age orderBy $
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "groupBy" operator works -->
+	<sub-flow name="example-of-groupBy">
+		<flow-ref doc:name="set-json-payload" name="set-json-payload"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload doc:sample="sample_data/employees.json" mimeType="application/json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload.employees groupBy $.married
+]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "distinctBy" operator works -->
+	<sub-flow name="example-of-distinctBy">
+		<flow-ref doc:name="set-json-payload" name="set-json-payload"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload doc:sample="sample_data/employees.json" mimeType="application/json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload.employees distinctBy $.married
+]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "zip" operator works -->
+	<sub-flow name="example-of-zip-arrays">
+		<flow-ref doc:name="set-json-payload" name="set-json-payload"/>
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:input-payload doc:sample="sample_data/employees.json" mimeType="application/json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+  same_number:      [0, 1, 2, 3] zip ["a", "b", "c", "d"],
+  different_number: [0, 1, 2, 3] zip ["a", "b"],
+  different_number: [0, 1, 2, 3] zip ["b"],
+  fName_lName : payload.employees.firstName zip payload.employees.lastName,
+  fName_lName : payload.employees.firstName zip payload.employees.lastName zip payload.employees.email
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "unzip" operator works -->
+	<sub-flow name="example-of-unzip-arrays">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+  equal_pair: unzip [[0,"a"],[1,"b"],[2,"c"],[3,"d"]],
+  equal_pair: unzip [ [0,"a"], [1,"a"], [2,"a"], [3,"a"]],
+  un_equal_pair: unzip [ [0,"a"], [1,"a","foo"], [2], [3,"a"]]
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "replace" operator works -->
+	<sub-flow name="example-of-replace">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+INTRO: "My Name is Ankur, and I am a software engg." replace "Ankur" with "ANKUR",
+REGEX: "admin123" replace /(\d+)/ with "ID"
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "matches" operator works -->
+	<sub-flow name="example-of-matches">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	REGEX1: "a12345" matches /(\d+)/,
+	REGEX2: "12345" matches /(\d+)/
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "startsWith" operator works -->
+	<sub-flow name="example-of-startsWith">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a1: "Ankur" startsWith "An",
+	a2: "Ankur" startsWith "an"
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "endsWith" operator works -->
+	<sub-flow name="example-of-endsWith">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a1: "Ankur" endsWith "ur",
+	a2: "Ankur" endsWith "UR"
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "find" operator works -->
+	<sub-flow name="example-of-find">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a1: "ankurbhuyan" find "u",
+	a2: "ankurbhuyan" find "an"
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "match" operator works -->
+	<sub-flow name="example-of-match">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+"ankurbhuyan@ankuran.online" match /([a-z]*)@([a-z]*).online/]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "scan" operator works -->
+	<sub-flow name="example-of-scan">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+"ankurbhuyan@ankuran.online,ankur@ankuran.online,alex@ankuran.online" scan /([a-z]*)@([a-z]*)/]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "similar" works -->
+	<sub-flow name="example-of-similar">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+    a1: "1234" == 1234,
+    a2: "1234" ~= 1234,
+    
+    b1: "true" == true,
+    b2: "true" ~= true,
+    
+    c1: "Ankur" == 'Ankur',
+    c2: "Ankur" ~= 'Ankur'
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "upper" operator works -->
+	<sub-flow name="example-of-upper">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+    My_Name : upper "Ankur Jyoti Bhuyan"
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "lower" operator works -->
+	<sub-flow name="example-of-lower">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+    My_Name : lower "Ankur Jyoti Bhuyan"
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "camelize" operator works -->
+	<sub-flow name="example-of-camelize">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a: camelize "ankur",
+	b: camelize "ankur_jyoti_bhuyan",
+	c: camelize "ankur jyoti bhuyan",
+	d: camelize "_ankur_jyoti_bhuyan"
+} ]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "capitalize" operator works -->
+	<sub-flow name="example-of-capitalize">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a: capitalize "ankur",
+	b: capitalize "ankur_jyoti_bhuyan",
+	c: capitalize "ankur jyoti bhuyan",
+	d: capitalize "_ankur_jyoti_bhuyan"
+} ]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "dasherize" operator works -->
+	<sub-flow name="example-of-dasherize">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a: dasherize "ankur jyoti bhuyan",
+	b: dasherize "ankur_jyoti_bhuyan",
+	c: dasherize "ankur jyoti bhuyan",
+	d: dasherize "_ankur_jyoti_bhuyan"
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "underscore" operator works -->
+	<sub-flow name="example-of-underscore">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a: underscore "ankur",
+	b: underscore "_ankur",
+	c: underscore " ankur ",
+	d: underscore "ankur jyoti bhuyan",
+	e: underscore "ankur_jyoti_bhuyan",
+	f: underscore "_ankur_jyoti_bhuyan"
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "pluralize" operator works -->
+	<sub-flow name="example-of-pluralize">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a: pluralize "man",
+	b: pluralize "wife",
+	c: pluralize "child",
+	d: pluralize "animal",
+	e: pluralize "dog",
+	f: pluralize "person",
+	f: pluralize "fruit"
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "singularize" operator works -->
+	<sub-flow name="example-of-singularize">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a: singularize "men",
+	b: singularize "wives",
+	c: singularize "childs",
+	d: singularize "animals",
+	e: singularize "dogs",
+	f: singularize "people",
+	f: singularize "fruits"
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "trim" operator works -->
+	<sub-flow name="example-of-trim">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a: trim "Ankur Bhuyan",
+	b: trim "	Ankur Bhuyan",
+	c: trim "	Ankur Bhuyan		"
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "substring" operator works -->
+	<sub-flow name="example-of-substring">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a: "Ankur Bhuyan" [0..4],
+	b: "Ankur Bhuyan" [-0..-4],
+	
+	c: "Ankur Bhuyan" [6..11],
+	
+	d: "		Ankur Bhuyan" [0..4],
+	e: "Ankur Bhuyan	" [6..12]
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "ordinalize" operator works -->
+	<sub-flow name="example-of-ordinalize">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	a: ordinalize 1,
+	b: ordinalize 2,
+	c: ordinalize 3,
+	d: ordinalize 4,
+	e: ordinalize 5,
+	f: ordinalize 6,
+	g: ordinalize 7,
+	h: ordinalize 8,
+	i: ordinalize 9,
+	j: ordinalize 10,
+	k: ordinalize 11,
+	l: ordinalize 20,
+	m: ordinalize 50,
+	n: ordinalize 100,
+	o: ordinalize 101,
+	p: ordinalize 102,
+	q: ordinalize 103,
+	r: ordinalize 104,
+	s: ordinalize 105
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "plus" works -->
+	<sub-flow name="example-of-plus">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	add_1 : 1 + 1,
+	add_2 : 1 + 1.0,
+	add_3 : 2 + 0.2,
+	add_4 : 2 + 0.0000231,
+	add_5 : 2 + 0.311212123
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "minus" works -->
+	<sub-flow name="example-of-minus">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	substract_1 : 1 - 1,
+	substract_2 : 1 - 1.0,
+	substract_3 : 2 - 0.2,
+	substract_4 : 2 - 0.0000231,
+	substract_5 : 2 - 0.311212123
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "multiply" works -->
+	<sub-flow name="example-of-multiply">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	multiply_1 : 1 * 1,
+	multiply_2 : 1 * 1.0,
+	multiply_3 : 2 * 0.2,
+	multiply_4 : 2 * 2,
+	multiply_5 : 2 * 0.5
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "division" works -->
+	<sub-flow name="example-of-division">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	division_1 : 1 / 1,
+	division_2 : 1 / 1.0,
+	division_3 : 2 / 1,
+	division_4 : 5 / 2,
+	division_5 : 100 / 50
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "max" operator works -->
+	<sub-flow name="example-of-max">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	max_1 : max [1..10],
+	max_2 : max [1..100],
+	max_3 : max [1, 2, 3],
+	max_4 : max ["1", "2", "3"],
+	max_5 : max [1.5, 2.5, 3.5]
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "min" operator works -->
+	<sub-flow name="example-of-min">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	min_1 : min [1..10],
+	min_2 : min [1..100],
+	min_3 : min [1, 2, 3],
+	min_4 : min ["1", "2", "3"],
+	min_5 : min [1.5, 2.5, 3.5]
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "round" operator works -->
+	<sub-flow name="example-of-round">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	round_1 : round 1.1,
+	round_2 : round 1.5,
+	round_3 : round 1.6,
+	round_4 : round 1.05,
+	round_5 : round 1.06
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "sqrt" operator works -->
+	<sub-flow name="example-of-sqrt">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	sqrt_1 : sqrt 1,
+	sqrt_2 : sqrt 2,
+	sqrt_3 : sqrt 4,
+	sqrt_4 : sqrt 8,
+	sqrt_1 : sqrt 16
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "pow" operator works -->
+	<sub-flow name="example-of-pow">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	pow_1 : 2 pow 1,
+	pow_2 : 2 pow 2,
+	pow_3 : 2 pow 3,
+	pow_4 : 3 pow 2,
+	pow_5 : 4 pow 2
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "ceil" operator works -->
+	<sub-flow name="example-of-ceil">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	ceil_1 : ceil 1,
+	ceil_2 : ceil 1.1,
+	ceil_3 : ceil 1.5,
+	ceil_4 : ceil 1.9,
+	ceil_5 : ceil 2.0
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "floor" operator works -->
+	<sub-flow name="example-of-floor">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	floor_1 : floor 1,
+	floor_2 : floor 1.1,
+	floor_3 : floor 1.5,
+	floor_4 : floor 1.9,
+	floor_5 : floor 2.0
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "abs" operator works -->
+	<sub-flow name="example-of-abs">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	abs_1 : abs 1,
+	abs_2 : abs 1.1,
+	abs_3 : abs -1.1,
+	abs_4 : abs -2,
+	abs_5 : abs 2.1
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "mod" operator works -->
+	<sub-flow name="example-of-mod">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	mod_1 : 2 mod 1,
+	mod_2 : 2 mod 2,
+	mod_3 : 2 mod 3,
+	mod_4 : 3 mod 2,
+	mod_5 : 4 mod 2,
+	mod_5 : 4.2 mod 2
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "now" operator works -->
+	<sub-flow name="example-of-now">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	time_at_now : now
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "Get Time Unit" works -->
+	<sub-flow name="example-of-get-time-unit">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{	
+	get_now : now,
+	get_day : now.day,
+	get_month : now.month,
+  	get_year : now.year,
+  	get_hour : now.hour,
+  	get_minutes	: now.minutes,
+  	get_seconds	: now.seconds,
+  	get_offsetSeconds : now.offsetSeconds,
+  	get_hour	: now.hour,
+  	get_nanoseconds	: now.nanoseconds,
+  	get_milliseconds	: now.milliseconds,
+  	get_dayOfWeek	: now.dayOfWeek,
+  	get_dayOfYear	: now.dayOfYear,
+  	get_years	: |P3Y2M10D|.years
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "Shift Time Zone" works -->
+	<sub-flow name="example-of-shift-time-zone">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{	
+	get_now : now,
+	get_shift : now >> |-08:00|
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "Append Time" works -->
+	<sub-flow name="example-of-append-time">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{	
+	get_now : now,
+	get_appended_time_1 : now ++ |23:57:59|,
+	get_appended_time_2 : now ++ |23:57:59Z|
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "Append Time Zone" works -->
+	<sub-flow name="example-of-append-time-zone">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{	
+	get_now : now,
+	get_appended_time_zone : now ++ |-03:00|
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow> 
+	
+	<!-- Sub flow to explain how "Adding a Period of Time" works -->
+	<sub-flow name="example-of-add-period-of-time">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{	
+	get_now : now,
+	add_period_of_time_1 : now + |P1Y|,
+	add_period_of_time_2 : |2020-05-09| + |P1Y|,
+	add_period_of_time_3 : |2020-05-09T23:57:59Z| + |P1Y|
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow> 
+	
+	<!-- Sub flow to explain how "Subtracting a Period of Time" works -->
+	<sub-flow name="example-of-subtract-period-of-time">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{	
+	get_now : now,
+	subtract_period_of_time_1 : now - |P1Y|,
+	subtract_period_of_time_2 : |2020-05-09| - |P1Y|,
+	subtract_period_of_time_3 : |2020-05-09T23:57:59Z| - |P1Y|
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Sub flow to explain how "Subtracting two Dates" works -->
+	<sub-flow name="example-of-subtract-two-dates">
+		<dw:transform-message doc:name="prepare response" metadata:id="c8c5c8f1-89c1-4823-94f2-d229046cfddd">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{	
+	get_now : now,
+	subtract_time : |23:59:56-03:00| - |23:59:56-00:00|,
+	subtract_year : |2020-05-09| - |2019-05-09|
+}]]></dw:set-payload>
+		</dw:transform-message>
+	</sub-flow>
+	
+	<!-- Utility sub flow to generate json payload -->
+	<sub-flow name="set-json-payload">
+		<set-payload value="{
+  &quot;employees&quot;: [
+    {
+      &quot;firstName&quot;:&quot;Ankur&quot;,
+      &quot;lastName&quot;:&quot;Bhuyan&quot;,
+      &quot;email&quot;:&quot;ankur.bhuyan@gmail.com&quot;,
+      &quot;salary&quot;:36000.89,
+      &quot;age&quot;:30,
+      &quot;married&quot;:false
+    },
+    {
+      &quot;firstName&quot;:&quot;Alex&quot;,
+      &quot;lastName&quot;:&quot;Surdu&quot;,
+      &quot;email&quot;:&quot;alex.surdu@gmail.com&quot;,
+      &quot;salary&quot;:35000.56,
+      &quot;age&quot;:45,
+      &quot;married&quot;:true
+      },
+    {
+      &quot;firstName&quot;:&quot;Cedric&quot;,
+      &quot;lastName&quot;:&quot;Firriera&quot;,
+      &quot;email&quot;:&quot;cedric.firriera@gmail.com&quot;,
+      &quot;salary&quot;:31000.12,
+      &quot;age&quot;:43,
+      &quot;married&quot;:true
+      },
+    {
+      &quot;firstName&quot;:&quot;Andrew&quot;,
+      &quot;lastName&quot;:&quot;Damien&quot;,
+      &quot;email&quot;:&quot;andrew.damien@gmail.com&quot;,
+      &quot;salary&quot;:51000.56,
+      &quot;age&quot;:33,
+      &quot;married&quot;:false
+      }
+  ]
+}" mimeType="application/json" doc:name="Set JSON"/>
+	</sub-flow>
+</mule>
